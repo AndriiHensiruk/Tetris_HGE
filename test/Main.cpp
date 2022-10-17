@@ -24,6 +24,7 @@ hgeQuad				quad;
 hgeGUI				*gui;
 hgeFont				*fnt;
 hgeSprite			*spr;
+hgeSprite			*spr1;
 
 
 HMUSIC music;
@@ -247,15 +248,15 @@ void RenderSprites()
 		for (int j = 0; j < width; j++)
 		{
 			if (field[i][j] == 0) continue;
-			spr->SetTextureRect(field[i][j] * 18, 0, 18, 18);
-			spr->Render(j * 18, i * 18);
+			spr1->SetTextureRect(field[i][j] * 18, 0, 18, 18);
+			spr1->Render(j * 18, i * 18);
 		}
 	}
 
 	for (int i = 0; i < 4; i++)
 	{
-		spr->SetTextureRect(colorNum * 18, 0, 18, 18);
-		spr->Render(a[i].x * 18, a[i].y * 18);
+		spr1->SetTextureRect(colorNum * 18, 0, 18, 18);
+		spr1->Render(a[i].x * 18, a[i].y * 18);
 	}
 }
 
@@ -378,6 +379,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		quad.tex=g_hge->Texture_Load("resources/bg.png");
 		tex=g_hge->Texture_Load("resources/cursor.png");
 		snd=g_hge->Effect_Load("resources/menu.wav");
+
+		
 		if(!quad.tex || !tex || !snd)
 		{
 			// If one of the data files is not found, display
@@ -387,14 +390,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			g_hge->Release();
 			return 0;
 		}
-///
+
 		gameoverEffect = g_hge->Effect_Load("resources/gameover.wav");
 		fallEffect = g_hge->Effect_Load("resources/fall.wav");
 		lineEffect = g_hge->Effect_Load("resources/line.wav");
 		music = g_hge->Music_Load("resources/music.it");
 		tex1 = g_hge->Texture_Load("resources/tiles.png");
 
-		spr = new hgeSprite(tex, 0, 0, 18, 18);
+		spr1 = new hgeSprite(tex1, 0, 0, 18, 18);
 		RegenerateFallingBlock();
 	
 		if (!music || !fallEffect || !lineEffect || !gameoverEffect || !tex1)
