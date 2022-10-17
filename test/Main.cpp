@@ -13,10 +13,10 @@
 
 #include <math.h>
 
-HGE *hge=0;
+
 // Some resource handles
 HEFFECT				snd;
-HTEXTURE			tex;
+HTEXTURE			tex, tex1;
 hgeQuad				quad;
 
 
@@ -299,14 +299,14 @@ bool Render()
 ////
 bool FrameFunc()
 {
-	float dt=hge->Timer_GetDelta();
+	float dt=g_hge->Timer_GetDelta();
 	static float t=0.0f;
 	float tx,ty;
 	int id;
 	static int lastid=0;
 
 	// If ESCAPE was pressed, tell the GUI to finish
-	if(hge->Input_GetKeyState(HGEK_ESCAPE)) { lastid=5; gui->Leave(); }
+	if(g_hge->Input_GetKeyState(HGEK_ESCAPE)) { lastid=5; gui->Leave(); }
 	
 	// We update the GUI and take an action if
 	// one of the menu items was selected
@@ -316,6 +316,7 @@ bool FrameFunc()
 		switch(lastid)
 		{
 			case 1:{
+				
 				Initialize(324, 648, Update, Render);
 				srand(time(0));
 				break;
@@ -347,46 +348,64 @@ bool FrameFunc()
 bool RenderFunc()
 {
 	// Render graphics
-	hge->Gfx_BeginScene();
-	hge->Gfx_RenderQuad(&quad);
+	g_hge->Gfx_BeginScene();
+	g_hge->Gfx_RenderQuad(&quad);
 	gui->Render();
 	/*fnt->SetColor(0xFFFFFFFF);
 	fnt->printf(5, 5, HGETEXT_LEFT, "dt:%.3f\nFPS:%d", hge->Timer_GetDelta(), hge->Timer_GetFPS());*/
-	hge->Gfx_EndScene();
+	g_hge->Gfx_EndScene();
 
 	return false;
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-	hge = hgeCreate(HGE_VERSION);
+	g_hge = hgeCreate(HGE_VERSION);
 
-	hge->System_SetState(HGE_LOGFILE, "hge_tetris.log");
-	hge->System_SetState(HGE_FRAMEFUNC, FrameFunc);
-	hge->System_SetState(HGE_RENDERFUNC, RenderFunc);
-	hge->System_SetState(HGE_TITLE, "Tetris menus");
-	hge->System_SetState(HGE_WINDOWED, true);
-	hge->System_SetState(HGE_SCREENWIDTH, 324);
-	hge->System_SetState(HGE_SCREENHEIGHT, 648);
-	hge->System_SetState(HGE_SCREENBPP, 32);
+	g_hge->System_SetState(HGE_LOGFILE, "hge_tetris.log");
+	g_hge->System_SetState(HGE_FRAMEFUNC, FrameFunc);
+	g_hge->System_SetState(HGE_RENDERFUNC, RenderFunc);
+	g_hge->System_SetState(HGE_TITLE, "Tetris menus");
+	g_hge->System_SetState(HGE_WINDOWED, true);
+	g_hge->System_SetState(HGE_SCREENWIDTH, 324);
+	g_hge->System_SetState(HGE_SCREENHEIGHT, 648);
+	g_hge->System_SetState(HGE_SCREENBPP, 32);
 
-	if(hge->System_Initiate())
+	if(g_hge->System_Initiate())
 	{
 
 		// Load sound and texturestetris
-		quad.tex=hge->Texture_Load("resources/bg.png");
-		tex=hge->Texture_Load("resources/cursor.png");
-		snd=hge->Effect_Load("resources/menu.wav");
+		quad.tex=g_hge->Texture_Load("resources/bg.png");
+		tex=g_hge->Texture_Load("resources/cursor.png");
+		snd=g_hge->Effect_Load("resources/menu.wav");
 		if(!quad.tex || !tex || !snd)
 		{
 			// If one of the data files is not found, display
 			// an error message and shutdown.
 			MessageBox(NULL, "Can't load BG.PNG, CURSOR.PNG or MENU.WAV", "Error", MB_OK | MB_ICONERROR | MB_APPLMODAL);
-			hge->System_Shutdown();
-			hge->Release();
+			g_hge->System_Shutdown();
+			g_hge->Release();
+			return 0;
+		}
+///
+		gameoverEffect = g_hge->Effect_Load("resources/gameover.wav");
+		fallEffect = g_hge->Effect_Load("resources/fall.wav");
+		lineEffect = g_hge->Effect_Load("resources/line.wav");
+		music = g_hge->Music_Load("resources/music.it");
+		tex1 = g_hge->Texture_Load("resources/tiles.png");
+
+		spr = new hgeSprite(tex, 0, 0, 18, 18);
+		RegenerateFallingBlock();
+	
+		if (!music || !fallEffect || !lineEffect || !gameoverEffect || !tex1)
+		{
+			Shutdown();
 			return 0;
 		}
 
+		g_hge->Music_Play(music, true, 1);
+
+		///
 		// Set up the quad we will use for background animation
 		quad.blend=BLEND_ALPHABLEND | BLEND_COLORMUL | BLEND_NOZWRITE;
 
@@ -423,89 +442,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		gui->Enter();
 
 		// Let's rock now!
-		hge->System_Start();
+		g_hge->System_Start();
 
 		// Delete created objects and free loaded resources
 		delete gui;
 		delete fnt;
 		delete spr;
-		hge->Effect_Free(snd);
-		hge->Texture_Free(tex);
-		hge->Texture_Free(quad.tex);
-	}
-	/////
-		if(IsInitialized())
-	{
-		gameoverEffect = g_hge->Effect_Load("resources/gameover.wav");
-		fallEffect = g_hge->Effect_Load("resources/fall.wav");
-		lineEffect = g_hge->Effect_Load("resources/line.wav");
-		music = g_hge->Music_Load("resources/music.it");
-		tex = g_hge->Texture_Load("resources/tiles.png");
-
-		spr = new hgeSprite(tex, 0, 0, 18, 18);
-		RegenerateFallingBlock();
-	
-		if (!music || !fallEffect || !lineEffect || !gameoverEffect || !tex)
-		{
-			Shutdown();
-			return 0;
-		}
-
-		g_hge->Music_Play(music, true, 1);
-
-		Run();
-
+		g_hge->Effect_Free(snd);
 		g_hge->Texture_Free(tex);
+		g_hge->Texture_Free(quad.tex);
+		g_hge->Texture_Free(tex1);
 		g_hge->Music_Free(music);
 		g_hge->Effect_Free(fallEffect);
 		g_hge->Effect_Free(lineEffect);
 		g_hge->Effect_Free(gameoverEffect);
 	}
-
-
+	
 	// Clean up and shutdown
-	hge->System_Shutdown();
-	hge->Release();
 	Shutdown();
 	return 0;
 }
 
 
-////int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-////{
-////	Initialize(324, 648, Update, Render);
-////
-////	srand(time(0));
-////
-////	if(IsInitialized())
-////	{
-////		gameoverEffect = g_hge->Effect_Load("resources/gameover.wav");
-////		fallEffect = g_hge->Effect_Load("resources/fall.wav");
-////		lineEffect = g_hge->Effect_Load("resources/line.wav");
-////		music = g_hge->Music_Load("resources/music.it");
-////		tex = g_hge->Texture_Load("resources/tiles.png");
-////
-////		spr = new hgeSprite(tex, 0, 0, 18, 18);
-////		RegenerateFallingBlock();
-////	
-////		if (!music || !fallEffect || !lineEffect || !gameoverEffect || !tex)
-////		{
-////			Shutdown();
-////			return 0;
-////		}
-////
-////		g_hge->Music_Play(music, true, 1);
-////
-////		Run();
-////
-////		g_hge->Texture_Free(tex);
-////		g_hge->Music_Free(music);
-////		g_hge->Effect_Free(fallEffect);
-////		g_hge->Effect_Free(lineEffect);
-////		g_hge->Effect_Free(gameoverEffect);
-////	}
-////
-////	Shutdown();
-////
-////	return 0;
-////}
