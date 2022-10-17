@@ -1,11 +1,11 @@
 HGE Started..
 
 HGE version: 1.80
-Date: 17.10.2022, 11:47:18
+Date: 17.10.2022, 17:54:53
 
 Application: Tetris menus
 OS: Windows 6.2.9200
-Memory: 2097151K total, 1801516K free
+Memory: 2097151K total, 929808K free
 
 D3D Driver: igdumdx32.dll
 Description: Intel(R) HD Graphics
@@ -18,19 +18,6 @@ Sample rate: 44100
 
 Init done.
 
-HGE Started..
-
-HGE version: 1.80
-Date: 17.10.2022, 11:47:25
-
-Application: Tetris
-OS: Windows 6.2.9200
-Memory: 2097151K total, 1778808K free
-
-Can't register window class
-
-Finishing..
-The End.
 
 Finishing..
 The End.
